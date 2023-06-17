@@ -1,0 +1,82 @@
+openapi: 3.0.1
+info:
+  title: Local File Plugin
+  description: A plugin that allows GPT to read and write files locally.
+  version: 'v1'
+servers:
+  - url: http://localhost:5001
+paths:
+  /:
+    get:
+      operationId: getFiles
+      summary: Get a list of all files in the target directory
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getFilesResponse'
+  /{filename}:
+    get:
+      operationId: getFile
+      summary: Get the content of a specified file
+      parameters:
+      - in: path
+        name: filename
+        schema:
+            type: string
+        required: true
+        description: The name of the file.
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: File not found
+    post:
+      operationId: writeFile
+      summary: Write data to a specified file
+      parameters:
+      - in: path
+        name: filename
+        schema:
+            type: string
+        required: true
+        description: The name of the file.
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+
+components:
+  schemas:
+    getFilesResponse:
+      type: object
+      properties:
+        files:
+          type: array
+          items:
+            type: string
+          description: The list of files.
+    writeFileRequest:
+      type: string
+      description: The data to write to the file.
+    writeFileResponse:
+      type: string
+      description: A message indicating success.
+    getFileResponse:
+      type: string
+      description: The content of the file.

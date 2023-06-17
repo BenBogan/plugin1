@@ -1,56 +1,35 @@
-import json
+from flask import Flask, request, jsonify, abort
+from flask_cors import CORS
+import os
 
-import quart
-import quart_cors
-from quart import request
+app = Flask(__name__)
+CORS(app)
+BASE_DIR = 'D:/Code/GPT/'
+YOUR_DIRECTORY_PATH = BASE_DIR + 'test/'
+# YOUR_DIRECTORY_PATH = "ABC"
+@app.route('/', methods=['GET'])
+def list_files():
+    print(YOUR_DIRECTORY_PATH)
+    files = os.listdir(YOUR_DIRECTORY_PATH)
+    # return jsonify({"ABC": "ABC"})
+    return jsonify(files)
 
-app = quart_cors.cors(quart.Quart(__name__), allow_origin="https://chat.openai.com")
+@app.route('/<path:filename>', methods=['GET', 'POST'])
+def get_or_write_file(filename):
+    file_path = os.path.join(YOUR_DIRECTORY_PATH, filename)
 
-# Keep track of todo's. Does not persist if Python session is restarted.
-_TODOS = {}
+    if request.method == 'GET':
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as file:
+                content = file.read()
+            return content
+        else:
+            abort(404, description="File not found")
+    elif request.method == 'POST':
+        data = request.data.decode('utf-8')  # assumes data is sent as text
+        with open(file_path, 'w') as file:
+            file.write(data)
+        return f"Successfully wrote to {filename}"
 
-@app.post("/todos/<string:username>")
-async def add_todo(username):
-    request = await quart.request.get_json(force=True)
-    if username not in _TODOS:
-        _TODOS[username] = []
-    _TODOS[username].append(request["todo"])
-    return quart.Response(response='OK', status=200)
-
-@app.get("/todos/<string:username>")
-async def get_todos(username):
-    return quart.Response(response=json.dumps(_TODOS.get(username, [])), status=200)
-
-@app.delete("/todos/<string:username>")
-async def delete_todo(username):
-    request = await quart.request.get_json(force=True)
-    todo_idx = request["todo_idx"]
-    # fail silently, it's a simple plugin
-    if 0 <= todo_idx < len(_TODOS[username]):
-        _TODOS[username].pop(todo_idx)
-    return quart.Response(response='OK', status=200)
-
-@app.get("/logo.png")
-async def plugin_logo():
-    filename = 'logo.png'
-    return await quart.send_file(filename, mimetype='image/png')
-
-@app.get("/.well-known/ai-plugin.json")
-async def plugin_manifest():
-    host = request.headers['Host']
-    with open("./.well-known/ai-plugin.json") as f:
-        text = f.read()
-        return quart.Response(text, mimetype="text/json")
-
-@app.get("/openapi.yaml")
-async def openapi_spec():
-    host = request.headers['Host']
-    with open("openapi.yaml") as f:
-        text = f.read()
-        return quart.Response(text, mimetype="text/yaml")
-
-def main():
-    app.run(debug=True, host="0.0.0.0", port=5003)
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app.run(debug=True, host="0.0.0.0", port=5001)
