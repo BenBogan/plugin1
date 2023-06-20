@@ -2,8 +2,8 @@
     "schema_version": "v1",
     "name_for_human": "Local File Access",
     "name_for_model": "local_file_access",
-    "description_for_human": "Manage your TODO list. You can add, remove and view your TODOs.",
-    "description_for_model": "Plugin for creating, reading, and writing to files on a local filesystem or repository.",
+    "description_for_human": "A plugin that allows GPT to use the CLI, Python, and edit files.",
+    "description_for_model": "Plugin to control a computer via CLI, Python, and editing files.",
     "auth": {
       "type": "none"
     },
