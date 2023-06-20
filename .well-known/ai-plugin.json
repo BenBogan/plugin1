@@ -3,7 +3,7 @@
     "name_for_human": "Local File Access",
     "name_for_model": "local_file_access",
     "description_for_human": "Manage your TODO list. You can add, remove and view your TODOs.",
-    "description_for_model": "Plugin for reading and writing to a local filesystem or repository.",
+    "description_for_model": "Plugin for creating, reading, and writing to files on a local filesystem or repository.",
     "auth": {
       "type": "none"
     },

@@ -39,7 +39,7 @@ paths:
           description: File not found
     post:
       operationId: writeFile
-      summary: Write data to a specified file
+      summary: Write content to a specified file
       parameters:
       - in: path
         name: filename
@@ -50,9 +50,15 @@ paths:
       requestBody:
         required: true
         content:
-          text/plain:
+          application/json:
             schema:
-              type: string
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: The content to write to the file.
+              required:
+                - content
       responses:
         "200":
           description: OK
@@ -60,7 +66,70 @@ paths:
             text/plain:
               schema:
                 type: string
-
+    delete:
+      operationId: deleteFile
+      summary: Delete a specified file
+      parameters:
+      - in: path
+        name: filename
+        schema:
+          type: string
+        required: true
+        description: The name of the file.
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: File not found
+  /cli:
+    post:
+      operationId: executeCLI
+      summary: Execute a CLI command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                command:
+                  type: string
+      responses:
+        '200':
+          description: The stdout and stderr from the command
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stdout:
+                    type: string
+                  stderr:
+                    type: string
+  /execute:
+    post:
+      operationId: executePython
+      summary: Execute Python code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+      responses:
+        '200':
+          description: The local variables after executing the code
+          content:
+            application/json:
+              schema:
+                type: object
 components:
   schemas:
     getFilesResponse:
@@ -80,3 +149,6 @@ components:
     getFileResponse:
       type: string
       description: The content of the file.
+    deleteFileResponse:
+      type: string
+      description: A message indicating the file was successfully deleted or not found.
