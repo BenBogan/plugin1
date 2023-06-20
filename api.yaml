@@ -1,0 +1,154 @@
+openapi: 3.0.1
+info:
+  title: Local File Plugin
+  description: A plugin that allows GPT to read and write files locally.
+  version: 'v1'
+servers:
+  - url: http://localhost:5001
+paths:
+  /:
+    get:
+      operationId: getFiles
+      summary: Get a list of all files in the target directory
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getFilesResponse'
+  /{filename}:
+    get:
+      operationId: getFile
+      summary: Get the content of a specified file
+      parameters:
+      - in: path
+        name: filename
+        schema:
+            type: string
+        required: true
+        description: The name of the file.
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: File not found
+    post:
+      operationId: writeFile
+      summary: Write content to a specified file
+      parameters:
+      - in: path
+        name: filename
+        schema:
+            type: string
+        required: true
+        description: The name of the file.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: The content to write to the file.
+              required:
+                - content
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+    delete:
+      operationId: deleteFile
+      summary: Delete a specified file
+      parameters:
+      - in: path
+        name: filename
+        schema:
+          type: string
+        required: true
+        description: The name of the file.
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: File not found
+  /cli:
+    post:
+      operationId: executeCLI
+      summary: Execute a CLI command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                command:
+                  type: string
+      responses:
+        '200':
+          description: The stdout and stderr from the command
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stdout:
+                    type: string
+                  stderr:
+                    type: string
+  /execute:
+    post:
+      operationId: executePython
+      summary: Execute Python code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+      responses:
+        '200':
+          description: The local variables after executing the code
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  schemas:
+    getFilesResponse:
+      type: object
+      properties:
+        files:
+          type: array
+          items:
+            type: string
+          description: The list of files.
+    writeFileRequest:
+      type: string
+      description: The data to write to the file.
+    writeFileResponse:
+      type: string
+      description: A message indicating success.
+    getFileResponse:
+      type: string
+      description: The content of the file.
+    deleteFileResponse:
+      type: string
+      description: A message indicating the file was successfully deleted or not found.
