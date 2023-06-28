@@ -17,57 +17,14 @@ app = Flask(__name__)
 CORS(app)
 app.json_encoder = CustomJSONEncoder
 
-IGNORE_FILE = 'D:/Code/GPT/.GPTignore'
-BASE_DIR = 'D:/Code/GPT/'
-YOUR_DIRECTORY_PATH = BASE_DIR
 
-@app.route('/', methods=['GET'])
-def list_files():
-    with open(IGNORE_FILE, 'r') as f:
-        ignore_patterns = f.read().splitlines()
-    return jsonify(list_files_dirs(YOUR_DIRECTORY_PATH, ignore_patterns))
-
-def list_files_dirs(path, ignore_patterns):
-    response = {'files': [], 'directories': []}
-    for root, dirs, files in os.walk(path):
-        dirs[:] = [d for d in dirs if not any(fnmatch.fnmatch(d, pattern) for pattern in ignore_patterns)]
-        for file in files:
-            if not any(fnmatch.fnmatch(file, pattern) for pattern in ignore_patterns):
-                response['files'].append(os.path.join(root, file))
-        for dir in dirs:
-            response['directories'].append(os.path.join(root, dir))
-    return response
-
-@app.route('/<path:filename>', methods=['GET', 'POST', 'DELETE'])
-def get_or_write_file(filename):
-    file_path = os.path.join(YOUR_DIRECTORY_PATH, filename)
-    if request.method == 'GET':
-        if os.path.exists(file_path):
-            with open(file_path, 'r') as file:
-                content = file.read()
-            return content
-        else:
-            abort(404, description='File not found')
-    elif request.method == 'POST':
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        data = request.data.decode('utf-8')  # assumes data is sent as text
-        with open(file_path, 'w') as file:
-            file.write(str(json.loads(data)['content']))
-        return f'Successfully wrote to {filename}'
-    elif request.method == 'DELETE':
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            return f'Successfully deleted {filename}'
-        else:
-            abort(404, description='File not found')
-
+# Routes for setting up the plugin
 @app.route('/.well-known/ai-plugin.json', methods=['GET'])
 def plugin_manifest():
     host = request.headers.get('Host')
     with open('./.well-known/ai-plugin.json') as f:
         text = f.read()
         return Response(text, mimetype='text/json')
-
 @app.route('/api.yaml', methods=['GET'])
 def openapi_spec():
     host = request.headers.get('Host')
@@ -75,6 +32,7 @@ def openapi_spec():
         text = f.read()
         return Response(text, mimetype='text/yaml')
 
+# Routes used by the plugin
 @app.route('/cli', methods=['POST'])
 def cli():
     command = request.json.get('command')
@@ -91,4 +49,4 @@ def execute():
     return jsonify(exec_locals)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5010)
